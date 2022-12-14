@@ -1,4 +1,4 @@
-module cooks-assistant
+module github.com/jmirfield/cooks-assistant
 
 go 1.19
 
