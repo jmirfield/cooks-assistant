@@ -91,7 +91,7 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 // The interface specification for the client above.
 type ClientInterface interface {
 	// GetRecipes request
-	GetRecipes(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetRecipes(ctx context.Context, params *GetRecipesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateRecipe request with any body
 	CreateRecipeWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -107,8 +107,8 @@ type ClientInterface interface {
 	UpdateRecipe(ctx context.Context, recipeUUID openapi_types.UUID, body UpdateRecipeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
-func (c *Client) GetRecipes(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetRecipesRequest(c.Server)
+func (c *Client) GetRecipes(ctx context.Context, params *GetRecipesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetRecipesRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +180,7 @@ func (c *Client) UpdateRecipe(ctx context.Context, recipeUUID openapi_types.UUID
 }
 
 // NewGetRecipesRequest generates requests for GetRecipes
-func NewGetRecipesRequest(server string) (*http.Request, error) {
+func NewGetRecipesRequest(server string, params *GetRecipesParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -197,6 +197,42 @@ func NewGetRecipesRequest(server string) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	queryValues := queryURL.Query()
+
+	if params.Limit != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Offset != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
@@ -371,7 +407,7 @@ func WithBaseURL(baseURL string) ClientOption {
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
 	// GetRecipes request
-	GetRecipesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetRecipesResponse, error)
+	GetRecipesWithResponse(ctx context.Context, params *GetRecipesParams, reqEditors ...RequestEditorFn) (*GetRecipesResponse, error)
 
 	// CreateRecipe request with any body
 	CreateRecipeWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateRecipeResponse, error)
@@ -477,8 +513,8 @@ func (r UpdateRecipeResponse) StatusCode() int {
 }
 
 // GetRecipesWithResponse request returning *GetRecipesResponse
-func (c *ClientWithResponses) GetRecipesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetRecipesResponse, error) {
-	rsp, err := c.GetRecipes(ctx, reqEditors...)
+func (c *ClientWithResponses) GetRecipesWithResponse(ctx context.Context, params *GetRecipesParams, reqEditors ...RequestEditorFn) (*GetRecipesResponse, error) {
+	rsp, err := c.GetRecipes(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}

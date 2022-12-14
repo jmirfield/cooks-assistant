@@ -17,7 +17,7 @@ import (
 type ServerInterface interface {
 
 	// (GET /recipes)
-	GetRecipes(w http.ResponseWriter, r *http.Request)
+	GetRecipes(w http.ResponseWriter, r *http.Request, params GetRecipesParams)
 
 	// (POST /recipes)
 	CreateRecipe(w http.ResponseWriter, r *http.Request)
@@ -42,10 +42,31 @@ type MiddlewareFunc func(http.Handler) http.Handler
 func (siw *ServerInterfaceWrapper) GetRecipes(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
+	var err error
+
 	ctx = context.WithValue(ctx, BearerAuthScopes, []string{""})
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetRecipesParams
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "limit", r.URL.Query(), &params.Limit)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "offset" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "offset", r.URL.Query(), &params.Offset)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "offset", Err: err})
+		return
+	}
+
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetRecipes(w, r)
+		siw.Handler.GetRecipes(w, r, params)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {

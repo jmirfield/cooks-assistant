@@ -41,6 +41,15 @@ type Recipes struct {
 	Recipes []Recipe `json:"recipes"`
 }
 
+// GetRecipesParams defines parameters for GetRecipes.
+type GetRecipesParams struct {
+	// Limit maximum number of results to return
+	Limit *int32 `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Offset offset number of results to return
+	Offset *int32 `form:"offset,omitempty" json:"offset,omitempty"`
+}
+
 // CreateRecipeJSONRequestBody defines body for CreateRecipe for application/json ContentType.
 type CreateRecipeJSONRequestBody = PostRecipe
 
