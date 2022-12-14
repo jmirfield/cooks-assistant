@@ -1,0 +1,170 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Cooks Assistant recipes
+  description: TODO
+servers:
+  - url: https://{hostname}/api
+    variables:
+      hostname:
+        default: localhost
+security:
+  - bearerAuth: []
+paths:
+  /recipes:
+    get:
+      operationId: getRecipes
+      responses:
+        '200':
+          description: todo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recipes'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      operationId: createRecipe
+      requestBody:
+        description: todo
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostRecipe'
+      responses:
+        '201':
+          description: todo
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /recipes/{recipeUUID}:
+    put:
+      operationId: updateRecipe
+      requestBody:
+        description: todo
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostRecipe'
+      parameters:
+        - in: path
+          name: recipeUUID
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: todo
+      responses:
+        '200':
+          description: todo
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      operationId: deleteRecipe
+      parameters:
+        - in: path
+          name: recipeUUID
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: todo
+      responses:
+        '200':
+          description: todo
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Recipe:
+      type: object
+      required: [uuid, user, userUuid, ingredients, instructions, prepTime, cookTime]
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        user:
+          type: string
+          example: Mariusz Pudzianowski
+        userUuid:
+          type: string
+          format: uuid
+        ingredients:
+          type: array
+          items:
+            type: string
+          example: ["1 lb of Chicken Thigh", "2 cups of Flour"]
+        instructions:
+          type: array
+          items:
+            type: string
+          example: ["Mix everything together", "Cook on high for 20 minutes"]
+        prepTime:
+          type: string
+        cookTime:
+          type: string
+
+    Recipes:
+      type: object
+      required: [recipes]
+      properties:
+        recipes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Recipe'
+
+    PostRecipe:
+      type: object
+      required: [ingredients, instructions, prepTime, cookTime]
+      properties:
+        ingredients:
+          type: array
+          items:
+            type: string
+          example: ["1 lb of Chicken Thigh", "2 cups of Flour"]
+        instructions:
+          type: array
+          items:
+            type: string
+          example: ["Mix everything together", "Cook on high for 20 minutes"]
+        prepTime:
+          type: string
+        cookTime:
+          type: string
+
+    Error:
+      type: object
+      required:
+        - slug
+        - message
+      properties:
+        slug:
+          type: string
+        message:
+          type: string
